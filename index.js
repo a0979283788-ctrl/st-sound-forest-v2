@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.1";
+const extensionVersion = "2.3.2";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
@@ -696,7 +696,7 @@ function splitVolcanoText(text, maxBytes = VOLCANO_MAX_TTS_UTF8_BYTES) {
 }
 
 // 火山引擎 V3 单向流式合成（经酒馆 /proxy 中转解决跨域），返回 mp3 Blob
-async function synthesizeVolcano(text, speaker, speed, emotionInstruction = "") {
+async function synthesizeVolcano(text, speaker, speed, emotionInstruction = "", resourceIdOverride = "", triedRids = null) {
   const s = extension_settings[extensionName] || {};
   const appId = String(s.volcAppId || "").trim();
   const accessKey = String(s.volcAccessKey || "").trim();
@@ -707,7 +707,7 @@ async function synthesizeVolcano(text, speaker, speed, emotionInstruction = "") 
     throw new Error("缺少必要参数: text/speaker");
   }
 
-  const resourceId = inferVolcResourceId(speaker);
+  const resourceId = String(resourceIdOverride || "").trim() || inferVolcResourceId(speaker);
   const requestId = createVolcRequestId();
   const body = {
     user: { uid: "st_user" },
@@ -770,6 +770,21 @@ async function synthesizeVolcano(text, speaker, speed, emotionInstruction = "") 
   if (!resp.ok) {
     const errText = await resp.text().catch(() => "");
     throw new Error(`火山引擎 HTTP ${resp.status}: ${String(errText).slice(0, 200)}${logid ? ` (logid: ${logid})` : ""}`);
+  }
+
+  // 55000000: resourceId 与音色不匹配 → 自动换轨到下一档 resourceId（防死循环：全部试过就放行抛错）
+  {
+    const ridList = ["seed-tts-1.0", "seed-tts-2.0", "seed-icl-2.0"];
+    const tried = triedRids || (resourceId ? [resourceId] : []);
+    const peek = await resp.clone().text().catch(() => "");
+    if (peek.includes("55000000")) {
+      const next = ridList.find(r => !tried.includes(r));
+      if (next) {
+        ttsLog(`⚠️ 火山 resourceId 与音色不匹配(${resourceId})，自动换轨 → ${next} 重试`);
+        return await synthesizeVolcano(text, speaker, speed, emotionInstruction, next, tried.concat([next]));
+      }
+      // 三个轨全试过仍不匹配 → 音色本身无效，抛出原错误
+    }
   }
 
   // V3 单向流式：逐行 JSON，data 字段是 base64 音频分片。
