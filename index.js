@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.2";
+const extensionVersion = "2.3.3";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
@@ -1697,7 +1697,12 @@ function parseSegmentScript(raw, defaultRole = "") {
     .replace(/<status>[\s\S]*?<\/status>/gi, " ")
     .replace(/<\/?(?:voice|nai_img|imgthink|img)\b[^>]*>/gi, " ")
     .replace(/\((?:ooc|OOC)\)|（(?:ooc|OOC)）|【(?:ooc|OOC)】/g, " ")
-    .replace(/<[^>]+>/g, " ");
+    .replace(/<[^>]+>/g, " ")
+    /* v2.3.3 新格式归一：【姓名|年龄段|情绪】“对白”/「对白」 → 姓名|年龄段|情绪「对白」 */
+    .replace(/\u3010([^\u3011\n]{1,40})\u3011\s*[\u201c"\u300c]([^\u201d"\u300d\n]*)[\u201d"\u300d]/g, (m, shell, body) => shell + "\u300c" + body + "\u300d")
+    /* 成对全角双引号台词 → 「」（直引号要求行首/空白/括号边界，防误伤） */
+    .replace(/[\u201c]([^\u201d\n]{1,2000})[\u201d]/g, (m, body) => "\u300c" + body + "\u300d")
+    .replace(/(^|[\s(（])"([^"\n]{1,2000})"/g, (m, pre, body) => pre + "\u300c" + body + "\u300d");
   const segs = [];
   let lastRole = String(defaultRole || "");
   const lines = text.split(/\r?\n/);
@@ -1713,7 +1718,7 @@ function parseSegmentScript(raw, defaultRole = "") {
       const prefix = line.slice(cursor, match.index).trim();
       const body = (match[1] || "").trim();
       if (prefix) {
-        const pIdx = prefix.search(/[，。！？…、,;；]/);
+        const pIdx = prefix.search(/[，。！？…、,;；:：]/);
         if (pIdx >= 0) {
           const narrPart = prefix.slice(0, pIdx).trim();
           const rolePart = prefix.slice(pIdx + 1).trim();
