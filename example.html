@@ -380,6 +380,12 @@
                                                 <input type="checkbox" id="sf_segment_mode" /><span>启用分段朗读：每句台词/旁白一条独立语音</span>
                                             </label>
                                         </div>
+                                        <div class="setting-item button-group">
+                                            <label>代理前缀(酒馆corsProxy被禁用时填本机中转):
+                                                <input type="text" id="sf_proxy_base" placeholder="/proxy/ 或 http://127.0.0.1:8787/proxy/" />
+                                            </label>
+                                            <small>默认 /proxy/；被禁时填 http://127.0.0.1:8787/proxy/（需 sf_proxy.py 在跑）</small>
+                                        </div>
                                         <div class="setting-item button-group sf-role-voice-tools">
                                             <small>台词格式：角色名|情绪「内容」（情绪仅限白名单词）；旁白格式：(情绪)叙述文字。音色查找顺序：角色绑定 &gt; 年龄档位 &gt; 默认音色；档位：<b>萝莉/少女/御姐/熟女/老年/男声/旁白</b>。</small>
                                         </div>
