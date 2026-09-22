@@ -4,7 +4,15 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.0";
+const extensionVersion = "2.3.1";
+// 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
+// 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
+function getProxyBase() {
+  const s = extension_settings[extensionName] || {};
+  const v = String(s.proxyBase || "").trim();
+  if (v) return v.endsWith("/") ? v : v + "/";
+  return "/proxy/";
+}
 
 // 全局状态管理
 const audioState = {
@@ -140,6 +148,7 @@ const defaultSettings = {
   roleVoiceMapMoss: {},
   // ===== 分段朗读 v2.3（旁白/多角色独立语音条 + 年龄档位音色）=====
   segmentMode: false,      // 总开关：每句台词/旁白独立成条
+  proxyBase: "/proxy/",    // 代理前缀，可改指本机中转
   tierVoiceMap: {},        // 硅基流动：档位→音色
   tierVoiceMapVolc: {},    // 火山引擎：档位→音色
   tierVoiceMapMinimax: {}, // MiniMax：档位→音色
@@ -208,7 +217,7 @@ async function verifyVolcCloneVoice(speakerId) {
     const r = (Math.random() * 16) | 0;
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   }));
-  const resp = await fetch("/proxy/" + encodeURIComponent(VOLC_GET_VOICE_URL), {
+  const resp = await fetch(getProxyBase() + encodeURIComponent(VOLC_GET_VOICE_URL), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -722,7 +731,7 @@ async function synthesizeVolcano(text, speaker, speed, emotionInstruction = "") 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), VOLCANO_REQUEST_TIMEOUT_MS);
     try {
-      resp = await fetch("/proxy/" + encodeURIComponent(VOLC_V3_URL), {
+      resp = await fetch(getProxyBase() + encodeURIComponent(VOLC_V3_URL), {
         method: "POST",
         headers: {
           ...(typeof getRequestHeaders === "function" ? getRequestHeaders() : {}),
@@ -912,7 +921,7 @@ async function synthesizeMinimax(text, voiceId, speed) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 45000);
       try {
-        resp = await fetch("/proxy/" + encodeURIComponent(requestedUrl), {
+        resp = await fetch(getProxyBase() + encodeURIComponent(requestedUrl), {
           method: "POST",
           headers: {
             ...(typeof getRequestHeaders === "function" ? getRequestHeaders() : {}),
@@ -1006,7 +1015,7 @@ async function fetchMossJson(path, options = {}) {
   const apiKey = String(s.mossApiKey || "").trim();
   if (!apiKey) throw new Error("请先填写 MOSS API Key");
   const url = normalizeMossHost(s.mossApiHost) + path;
-  const resp = await fetch("/proxy/" + encodeURIComponent(url), {
+  const resp = await fetch(getProxyBase() + encodeURIComponent(url), {
     ...options,
     headers: {
       ...(typeof getRequestHeaders === "function" ? getRequestHeaders() : {}),
@@ -1062,7 +1071,7 @@ async function createMossVoice(apiKey, file, name, description = "") {
   const request = async (targetUrl) => fetch(targetUrl, {
     method: "POST",
     headers: {
-      ...(typeof getRequestHeaders === "function" && targetUrl.startsWith("/proxy/") ? getRequestHeaders() : {}),
+      ...(typeof getRequestHeaders === "function" && targetUrl.startsWith(getProxyBase()) ? getRequestHeaders() : {}),
       Authorization: `Bearer ${apiKey}`,
     },
     body: buildFormData(),
@@ -1106,7 +1115,7 @@ async function createMossVoice(apiKey, file, name, description = "") {
   }
   ttsLog("↪️ MOSS 直连上传未成功，尝试酒馆 /proxy 中转");
   try {
-    const proxyResp = await request("/proxy/" + encodeURIComponent(url));
+    const proxyResp = await request(getProxyBase() + encodeURIComponent(url));
     if (proxyResp.ok) {
       return parseVoiceResponse(proxyResp, "酒馆 /proxy");
     }
@@ -1156,7 +1165,7 @@ async function synthesizeMoss(text, voiceId) {
   const timeoutId = setTimeout(() => controller.abort(), 60000);
   let resp;
   try {
-    resp = await fetch("/proxy/" + encodeURIComponent(url), {
+    resp = await fetch(getProxyBase() + encodeURIComponent(url), {
       method: "POST",
       headers: {
         ...(typeof getRequestHeaders === "function" ? getRequestHeaders() : {}),
@@ -1367,6 +1376,7 @@ async function loadSettings() {
   $("#auto_play_audio").prop("checked", extension_settings[extensionName].autoPlay !== false);
   $("#auto_play_user").prop("checked", extension_settings[extensionName].autoPlayUser === true);
   $("#sf_segment_mode").prop("checked", extension_settings[extensionName].segmentMode === true);
+  $("#sf_proxy_base").val(extension_settings[extensionName].proxyBase || "/proxy/");
   $("#tts_enable_extra_text_rules").prop("checked", extension_settings[extensionName].extraTextRulesEnabled === true);
   $("#tts_skip_status_tag").prop("checked", extension_settings[extensionName].skipStatusTagEnabled !== false);
   $("#tts_read_untagged_with_required").prop("checked", extension_settings[extensionName].readUntaggedWithRequired === true);
@@ -2061,6 +2071,7 @@ function saveSettings() {
   extension_settings[extensionName].autoPlay = $("#auto_play_audio").prop("checked");
   extension_settings[extensionName].autoPlayUser = $("#auto_play_user").prop("checked");
   extension_settings[extensionName].segmentMode = $("#sf_segment_mode").prop("checked") === true;
+  extension_settings[extensionName].proxyBase = String($("#sf_proxy_base").val() || "").trim() || "/proxy/";
   // 引擎与火山设置
   const selectedEngine = $("#tts_engine").val();
   extension_settings[extensionName].engine = selectedEngine === "volcano" || selectedEngine === "minimax" || selectedEngine === "moss" ? selectedEngine : "siliconflow";
