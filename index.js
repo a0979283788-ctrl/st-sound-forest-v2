@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.7";
+const extensionVersion = "2.3.8";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
@@ -147,7 +147,9 @@ const defaultSettings = {
   mossResponseFormat: "mp3",
   roleVoiceMapMoss: {},
   // ===== 分段朗读 v2.3（旁白/多角色独立语音条 + 年龄档位音色）=====
-  segmentMode: false,      // 总开关：每句台词/旁白独立成条
+  segmentMode: false,
+  readNarrator: true,      // v2.3.8 朗读旁白
+  readDialog: true,        // v2.3.8 朗读角色台词      // 总开关：每句台词/旁白独立成条
   proxyBase: "/proxy/",    // 代理前缀，可改指本机中转
   tierVoiceMap: {},        // 硅基流动：档位→音色
   tierVoiceMapVolc: {},    // 火山引擎：档位→音色
@@ -1391,6 +1393,8 @@ async function loadSettings() {
   $("#auto_play_audio").prop("checked", extension_settings[extensionName].autoPlay !== false);
   $("#auto_play_user").prop("checked", extension_settings[extensionName].autoPlayUser === true);
   $("#sf_segment_mode").prop("checked", extension_settings[extensionName].segmentMode === true);
+  $("#sf_read_narrator").prop("checked", extension_settings[extensionName].readNarrator !== false);
+  $("#sf_read_dialog").prop("checked", extension_settings[extensionName].readDialog !== false);
   $("#sf_proxy_base").val(extension_settings[extensionName].proxyBase || "/proxy/");
   $("#tts_enable_extra_text_rules").prop("checked", extension_settings[extensionName].extraTextRulesEnabled === true);
   $("#tts_skip_status_tag").prop("checked", extension_settings[extensionName].skipStatusTagEnabled !== false);
@@ -1893,6 +1897,13 @@ async function sfSynthSegmentUrls(seg) {
   return urls;
 }
 
+// v2.3.8 旁白/角色台词开关判定：true=该段需要朗读
+function sfReadEnabled(seg) {
+  const s = extension_settings[extensionName] || {};
+  const isNarr = !seg || seg.type === "narr" || seg.type !== "dialog";
+  return isNarr ? (s.readNarrator !== false) : (s.readDialog !== false);
+}
+
 // 按顺序合成所有段并连续播放（复用原队列：进度条/喇叭状态全兼容）
 async function playSegmentSequence(segs, buttonElement = null, messageElement = null) {
   if (!Array.isArray(segs) || !segs.length) return;
@@ -1910,6 +1921,7 @@ async function playSegmentSequence(segs, buttonElement = null, messageElement = 
   const rows = messageElement ? messageElement.find(".sf-seg-row") : $();
   ttsLog(`🎬 分段朗读开始：共 ${segs.length} 段`);
   let okCount = 0;
+  let skippedCount = 0;
   let started = false;
   const pushUrl = (url) => {
     if (!started) {
@@ -1923,6 +1935,11 @@ async function playSegmentSequence(segs, buttonElement = null, messageElement = 
   for (let i = 0; i < segs.length; i += 1) {
     if (sessionId !== audioState.queueSessionId) { audioState.queueGenerating = false; return; }
     const seg = segs[i];
+    if (!sfReadEnabled(seg)) {
+      skippedCount += 1;
+      ttsLog(`⏭ 已跳过第 ${i + 1} 段（${seg.type === "narr" ? "旁白" : "角色台词"}已关闭）`);
+      continue;
+    }
     try {
       const urls = await sfSynthSegmentUrls(seg);
       if (sessionId !== audioState.queueSessionId) { audioState.queueGenerating = false; return; }
@@ -1940,7 +1957,11 @@ async function playSegmentSequence(segs, buttonElement = null, messageElement = 
   if (audioState.queueWaiting) playNextQueuedAudio(sessionId);
   if (!okCount) {
     resetPlayState();
-    toastr.error("分段朗读失败，点 ▶ 打开日志查看原因", "分段朗读");
+    if (skippedCount) {
+      toastr.info(`已按设置跳过 ${skippedCount} 段（旁白/角色台词开关已关），没有需要朗读的内容`, "分段朗读");
+    } else {
+      toastr.error("分段朗读失败，点 ▶ 打开日志查看原因", "分段朗读");
+    }
   }
 }
 
@@ -1974,8 +1995,9 @@ function renderSegmentControls(messageElement) {
     const emo = seg.emotion ? `<span class="sf-seg-emo">${escapeHtml(seg.emotion)}</span>` : "";
     const plain = String(seg.text).replace(/\s+/g, " ");
     const snippet = escapeHtml(plain.slice(0, 26));
+    const off = sfReadEnabled(seg) ? "" : " sf-seg-off";
     const row = $(
-      `<div class="sf-seg-row" data-idx="${i}">` +
+      `<div class="sf-seg-row${off}" data-idx="${i}">` +
       `<span class="sf-seg-chip">${escapeHtml(label)}${emo}</span>` +
       `<span class="sf-seg-text">${snippet}${plain.length > 26 ? "…" : ""}</span>` +
       `<span class="sf-seg-play" role="button" title="单独播放这一段（缓存不扣费）">▶</span>` +
@@ -1997,6 +2019,8 @@ function applySegmentStyle() {
   style.textContent = `
   .sf-seg-block{margin-top:8px;border:1px dashed rgba(140,120,255,.35);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:5px;background:rgba(120,100,255,.06);}
   .sf-seg-row{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.5;}
+  .sf-seg-row.sf-seg-off{opacity:.42;}
+  .sf-seg-row.sf-seg-off .sf-seg-play{opacity:.55;}
   .sf-seg-chip{flex:0 0 auto;background:rgba(140,120,255,.22);border:1px solid rgba(140,120,255,.45);border-radius:999px;padding:1px 8px;color:#cfc6ff;font-weight:600;}
   .sf-seg-emo{margin-left:4px;color:#ffd54a;font-weight:400;}
   .sf-seg-text{flex:1 1 auto;color:inherit;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -2071,6 +2095,20 @@ function bindSegmentDelegation() {
     else toastr.info("已关闭分段朗读，恢复整条朗读", "分段朗读");
   });
 
+  // v2.3.8 旁白 / 角色台词 开关
+  $(document).on("change", "#sf_read_narrator", function () {
+    extension_settings[extensionName].readNarrator = this.checked === true;
+    saveSettingsDebounced();
+    $(".mes").each(function () { renderSegmentControls($(this)); });
+    toastr.info(this.checked ? "旁白：朗读开启" : "旁白：已关闭，不再合成", "分段朗读");
+  });
+  $(document).on("change", "#sf_read_dialog", function () {
+    extension_settings[extensionName].readDialog = this.checked === true;
+    saveSettingsDebounced();
+    $(".mes").each(function () { renderSegmentControls($(this)); });
+    toastr.info(this.checked ? "角色台词：朗读开启" : "角色台词：已关闭，不再合成", "分段朗读");
+  });
+
   // 档位音色选择保存
   $(document).on("change", ".sf-tier-voice-select", function () {
     const tier = String($(this).attr("data-tier") || "");
@@ -2122,6 +2160,8 @@ function saveSettings() {
   extension_settings[extensionName].autoPlay = $("#auto_play_audio").prop("checked");
   extension_settings[extensionName].autoPlayUser = $("#auto_play_user").prop("checked");
   extension_settings[extensionName].segmentMode = $("#sf_segment_mode").prop("checked") === true;
+  extension_settings[extensionName].readNarrator = $("#sf_read_narrator").prop("checked") !== false;
+  extension_settings[extensionName].readDialog = $("#sf_read_dialog").prop("checked") !== false;
   extension_settings[extensionName].proxyBase = String($("#sf_proxy_base").val() || "").trim() || "/proxy/";
   // 引擎与火山设置
   const selectedEngine = $("#tts_engine").val();
