@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.4";
+const extensionVersion = "2.3.5";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
@@ -1683,6 +1683,15 @@ function sfClassifyPrefix(prefix) {
     if (part === "极慢") { out.speed = 0.55; continue; }
     if (SF_EMOTION_WHITELIST.includes(part)) { out.emotion = part; continue; }
     if (SF_TIERS.includes(part)) { out.tier = part; continue; }
+    // v2.3.5 小说体尾部提取：叙述尾巴粘档位/情绪（如"眼中闪过喜色。少女"）→ 剥离识别
+    if (!out.emotion) {
+      const te = SF_EMOTION_WHITELIST.find(e => part.length > e.length && part.endsWith(e));
+      if (te) { out.emotion = te; continue; }
+    }
+    if (!out.tier) {
+      const tt = SF_TIERS.find(t => part.length > t.length && part.endsWith(t));
+      if (tt) { out.tier = tt; continue; }
+    }
     // 单/双字情绪容错：如「怒」→愤怒、「冷」→冷淡（在抢角色名之前判，避免被误当名字）
     if (part.length <= 2 && !out.emotion) {
       const fuzzy = SF_EMOTION_WHITELIST.find(e => e.includes(part));
