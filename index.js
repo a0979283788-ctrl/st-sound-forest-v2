@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.5";
+const extensionVersion = "2.3.6";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
@@ -1606,19 +1606,31 @@ function renderRoleVoiceMap(names = collectCurrentChatSpeakers()) {
   if (container.length === 0) return;
   const roleVoiceMap = getRoleVoiceMap();
   const voiceOptions = getEngineVoiceOptions();
-  if (!names.length) {
-    container.html('<small>当前聊天还没有读到角色消息。打开角色聊天页后点“刷新当前聊天角色”。</small>');
-    renderTierVoiceMap();
-    return;
-  }
   const optionHtml = (selected) => [
     '<option value="">使用默认语音角色</option>',
     ...voiceOptions.map(opt => `<option value="${escapeHtml(opt.value)}"${opt.value === selected ? " selected" : ""}>${escapeHtml(opt.label)}</option>`),
   ].join("");
-  container.html(names.map(name => `
+  // v2.3.6 添加行下拉：每次渲染都刷新选项，保留当前选中
+  const addSel = $("#sf_add_role_voice");
+  if (addSel.length) {
+    const cur = String(addSel.val() || "");
+    addSel.html('<option value="">使用默认语音角色</option>' + voiceOptions.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</option>`).join(""));
+    addSel.val(cur);
+  }
+  // v2.3.6 手动绑定的姓名也要成行显示（卡内人物，聊天里扫不到）
+  const manualNames = Object.keys(roleVoiceMap).filter(Boolean);
+  const merged = names.slice();
+  manualNames.forEach(n => { if (!merged.includes(n)) merged.push(n); });
+  if (!merged.length) {
+    container.html('<small>还没有绑定。在上方手动输入角色姓名点「添加绑定」，或打开角色聊天页点“刷新当前聊天角色”。</small>');
+    renderTierVoiceMap();
+    return;
+  }
+  container.html(merged.map(name => `
     <div class="setting-item button-group sf-role-voice-row" data-role-name="${escapeHtml(name)}">
       <span class="sf-role-name">${escapeHtml(name)}</span>
       <select class="tts-role-voice-select">${optionHtml(roleVoiceMap[name] || "")}</select>
+      <button class="menu_button sf-role-del" type="button" data-role-name="${escapeHtml(name)}" title="解除绑定">✕</button>
     </div>
   `).join(""));
   renderTierVoiceMap();
@@ -4640,6 +4652,34 @@ jQuery(async () => {
   $("#refresh_role_voices").on("click", function() {
     renderRoleVoiceMap();
     toastr.success("已刷新当前聊天角色", "多人音色");
+  });
+
+  // ===== v2.3.6 手动添加角色姓名 → 音色绑定（卡内人物，与角色卡名无关） =====
+  $(document).on("click", "#sf_add_role_btn", function() {
+    const name = String($("#sf_add_role_name").val() || "").trim();
+    const voice = String($("#sf_add_role_voice").val() || "").trim();
+    if (!name) { toastr.warning("请先输入角色姓名", "多人音色"); return; }
+    const map = getRoleVoiceMap();
+    map[name] = voice;
+    saveSettingsDebounced();
+    $("#sf_add_role_name").val("");
+    renderRoleVoiceMap();
+    ttsLog("🎭 已绑定角色音色：" + name + " → " + (voice || "默认音色"));
+  });
+  $(document).on("keydown", "#sf_add_role_name", function(ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); $("#sf_add_role_btn").trigger("click"); }
+  });
+  $(document).on("click", ".sf-role-del", function() {
+    const name = String($(this).attr("data-role-name") || "").trim();
+    const map = getRoleVoiceMap();
+    if (name && Object.prototype.hasOwnProperty.call(map, name)) {
+      delete map[name];
+      saveSettingsDebounced();
+      renderRoleVoiceMap();
+      ttsLog("🗑 已解除角色音色绑定：" + name);
+    } else {
+      toastr.info("这一行不是手动绑定，无需解除", "多人音色");
+    }
   });
   $(document).on("change", ".tts-role-voice-select", function() {
     const roleName = $(this).closest(".sf-role-voice-row").attr("data-role-name");
