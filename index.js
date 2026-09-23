@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.3";
+const extensionVersion = "2.3.4";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
@@ -1668,9 +1668,19 @@ function getTierVoiceMap() {
 
 // 把台词行前缀按 | 拆开分类：角色名 / 年龄档位 / 情绪
 function sfClassifyPrefix(prefix) {
-  const out = { role: "", tier: "", emotion: "" };
+  const out = { role: "", tier: "", emotion: "", speed: "" };
   const parts = String(prefix || "").split("|").map(x => x.trim()).filter(Boolean);
   for (const part of parts) {
+    // v2.3.4 语速段：1.3 / x1.3 / 1.3x → 0.5~2.0；关键词 快/慢/极快/极慢
+    if (/^x?\d+(?:\.\d+)?x?$/i.test(part)) {
+      const v = parseFloat(part.replace(/^x/i, ""));
+      if (v > 0) out.speed = Math.min(2, Math.max(0.5, v));
+      continue;
+    }
+    if (part === "快") { out.speed = 1.3; continue; }
+    if (part === "慢") { out.speed = 0.7; continue; }
+    if (part === "极快") { out.speed = 1.6; continue; }
+    if (part === "极慢") { out.speed = 0.55; continue; }
     if (SF_EMOTION_WHITELIST.includes(part)) { out.emotion = part; continue; }
     if (SF_TIERS.includes(part)) { out.tier = part; continue; }
     // 单/双字情绪容错：如「怒」→愤怒、「冷」→冷淡（在抢角色名之前判，避免被误当名字）
@@ -1725,11 +1735,11 @@ function parseSegmentScript(raw, defaultRole = "") {
           if (narrPart) segs.push({ type: "narr", text: narrPart, emotion: "", role: "", tier: "旁白" });
           const c = sfClassifyPrefix(rolePart);
           if (c.role) lastRole = c.role;
-          if (body) segs.push({ type: "dialog", text: body, role: c.role || lastRole, tier: c.tier, emotion: c.emotion });
+          if (body) segs.push({ type: "dialog", text: body, role: c.role || lastRole, tier: c.tier, emotion: c.emotion, speed: c.speed || "" });
         } else {
           const c = sfClassifyPrefix(prefix);
           if (c.role) lastRole = c.role;
-          if (body) segs.push({ type: "dialog", text: body, role: c.role || lastRole, tier: c.tier, emotion: c.emotion });
+          if (body) segs.push({ type: "dialog", text: body, role: c.role || lastRole, tier: c.tier, emotion: c.emotion, speed: c.speed || "" });
         }
       } else if (body) {
         segs.push({ type: "dialog", text: body, role: lastRole, tier: "", emotion: "" });
@@ -1789,7 +1799,7 @@ async function sfSynthSegmentUrls(seg) {
   const engine = getEngine();
   const s = extension_settings[extensionName] || {};
   const voice = sfResolveSegmentVoice(seg);
-  const speed = sfCurrentSpeed(engine);
+  const speed = (seg.speed && Number(seg.speed) > 0) ? Number(seg.speed) : sfCurrentSpeed(engine);
   const gain = engine === "siliconflow" ? (parseFloat($("#tts_gain").val()) || s.ttsGain || 0) : 0;
   const instruction = seg.emotion ? (SF_EMOTION_INSTRUCTION[seg.emotion] || "") : "";
   if (instruction && engine !== "volcano" && !sfEngineEmotionWarned) {
