@@ -1981,7 +1981,10 @@ function renderSegmentControls(messageElement) {
   }
   const raw = getMessageSourceText(messageElement);
   if (!raw) return;
-  const hash = String(raw.length) + "_" + sfSimpleHash(raw);
+  // v2.3.8b 开关状态并入哈希：切「朗读旁白/角色台词」时强制重绘行（否则置灰不更新）
+  const swState = (extension_settings[extensionName].readNarrator !== false ? "N1" : "N0")
+    + (extension_settings[extensionName].readDialog !== false ? "D1" : "D0");
+  const hash = String(raw.length) + "_" + sfSimpleHash(raw) + "_" + swState;
   if (messageElement.data("sfSegHash") === hash && messageElement.find(".sf-seg-block").length) return;
   messageElement.find(".sf-seg-block").remove();
   const defaultRole = getMessageSpeakerName(messageElement);
