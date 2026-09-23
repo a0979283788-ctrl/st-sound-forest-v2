@@ -4,7 +4,7 @@ import { saveSettingsDebounced, eventSource, event_types, getRequestHeaders } fr
 // 扩展配置：按实际安装文件夹自动识别，避免仓库名改了以后找不到 example.html
 const extensionFolderPath = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 const extensionName = decodeURIComponent(extensionFolderPath.split("/").pop() || "ST-sound-forest-TTS");
-const extensionVersion = "2.3.6";
+const extensionVersion = "2.3.7";
 // 代理前缀：酒馆 corsProxy 被禁用(config.yaml corsProxy:false)时，可指向本机中转
 // 例如 http://127.0.0.1:8787/proxy/（sf_proxy.py）。默认走酒馆内置 /proxy/。
 function getProxyBase() {
