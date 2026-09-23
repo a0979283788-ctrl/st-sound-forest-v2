@@ -1,550 +1,373 @@
-/* 生图与语音功能插件 - 样式文件 */
-/* 避免影响全局样式 */
+/* ==========================================================================
+   声林 TTS (ST-sound-forest-v2) 现代化紧凑卡片重构样式 (v2.3.7)
+   设计规范：
+   - 整体紧凑化（Compact & Dense），大幅收缩傻大粗的外边距与行高
+   - 高阶暗黑炭灰卡片质感，100% 融入 SillyTavern 原生主题体系
+   - 输入框、下拉、按钮高度微型化（26px ~ 30px），手机上一屏到底
+   ========================================================================== */
 
-/* 主插件容器 */
-.siliconflow-extension-settings .extension-block {
-    /* 不设置背景色，继承主题背景 */
-    border: 1px solid var(--SmartThemeBorderColor, #444);
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
+/* 根容器与基础排版 */
+.siliconflow-extension-settings {
+    font-size: 0.88em !important;
+    line-height: 1.4 !important;
+    color: var(--SmartThemeBodyColor, #e0e0e0);
 }
 
-.siliconflow-extension-settings .extension-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+.siliconflow-extension-settings * {
+    box-sizing: border-box;
 }
 
-.siliconflow-extension-settings .extension-title h3 {
-    margin: 0;
-    color: var(--SmartThemeBodyColor, #333);
+/* 顶部信息行微型化 */
+.siliconflow-extension-settings .sf-progress-note {
+    padding: 6px 10px !important;
+    margin-bottom: 8px !important;
+    background: rgba(0, 0, 0, 0.22) !important;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.08)) !important;
+    border-radius: 6px !important;
 }
 
-.siliconflow-extension-settings .extension-version {
-    color: var(--SmartThemeBodyColor, #666);
-    font-size: 0.9em;
+.siliconflow-extension-settings .sf-progress-note small {
+    font-size: 0.82em !important;
+    opacity: 0.75 !important;
+    line-height: 1.4 !important;
 }
 
-.siliconflow-extension-settings hr.sysHR {
-    border: 0;
-    border-top: 1px solid var(--SmartThemeBorderColor, #ddd);
-    margin: 15px 0;
+/* 紧凑左右布局 (导航 + 面板) */
+.siliconflow-extension-settings .sf-layout {
+    display: flex !important;
+    gap: 8px !important;
 }
 
-/* 插件容器内的样式 */
+.siliconflow-extension-settings .sf-side-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 72px !important;
+    flex-shrink: 0 !important;
+}
+
+.siliconflow-extension-settings .sf-nav-item {
+    padding: 6px 4px !important;
+    font-size: 0.85em !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.1)) !important;
+    background: rgba(0, 0, 0, 0.25) !important;
+    color: var(--SmartThemeBodyColor, #bbb) !important;
+    cursor: pointer !important;
+    text-align: center !important;
+    transition: all 0.15s ease !important;
+}
+
+.siliconflow-extension-settings .sf-nav-item:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.siliconflow-extension-settings .sf-nav-active {
+    background: var(--SmartThemeEmColor, #ffb86c) !important;
+    color: #111 !important;
+    font-weight: 700 !important;
+    border-color: transparent !important;
+}
+
+.siliconflow-extension-settings .sf-panes {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+/* 现代暗黑炭灰微卡片 (Card) */
+.siliconflow-extension-settings .sf-section {
+    background: rgba(0, 0, 0, 0.22) !important;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.09)) !important;
+    border-radius: 7px !important;
+    padding: 8px 10px !important;
+    margin-bottom: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18) !important;
+}
+
+.siliconflow-extension-settings .sf-section h4 {
+    margin: 0 0 6px 0 !important;
+    font-size: 0.95em !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
+    color: var(--SmartThemeEmColor, #ffb86c) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+.siliconflow-extension-settings .sf-section h4::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 11px;
+    background: var(--SmartThemeEmColor, #ffb86c);
+    border-radius: 2px;
+}
+
+/* 紧凑设置行 (Row) */
+.siliconflow-extension-settings .sf-setting-row,
 .siliconflow-extension-settings .setting-item {
-    margin-bottom: 15px;
+    margin-bottom: 6px !important;
 }
 
+.siliconflow-extension-settings .sf-setting-row label,
 .siliconflow-extension-settings .setting-item label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--SmartThemeBodyColor, #666);
+    display: block !important;
+    font-size: 0.84em !important;
+    font-weight: 600 !important;
+    margin-bottom: 3px !important;
+    color: var(--SmartThemeBodyColor, #ccc) !important;
+    opacity: 0.88 !important;
 }
 
+/* 输入框 / 下拉框 / 按钮微型化 */
 .siliconflow-extension-settings input[type="text"],
 .siliconflow-extension-settings input[type="password"],
 .siliconflow-extension-settings input[type="number"],
 .siliconflow-extension-settings select,
 .siliconflow-extension-settings textarea {
-    width: calc(100% - 20px);
-    padding: 8px;
-    margin: 5px 0;
-    border: 1px solid var(--SmartThemeBorderColor, rgba(255,255,255,0.72));
-    border-radius: 4px;
-    background-color: var(--SmartThemeBlurTintColor, rgba(0,0,0,0.35));
-    color: var(--SmartThemeBodyColor);
-}
-
-.siliconflow-extension-settings input[type="range"] {
-    width: 200px;
-    margin-right: 10px;
-}
-
-.siliconflow-extension-settings .sf-voice-slider-grid input[type="range"] {
-    max-width: 100%;
-}
-
-.siliconflow-extension-settings .menu_button {
-    padding: 8px 15px;
-    margin: 5px;
-    white-space: nowrap;
-}
-
-.siliconflow-extension-settings h4 {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: var(--SmartThemeBodyColor, #333);
-}
-
-.siliconflow-extension-settings small {
-    display: block;
-    color: var(--SmartThemeBodyColor, #888);
-    font-size: 0.85em;
-    margin-top: 5px;
-}
-
-#connection_status {
-    margin-left: 10px;
-    font-weight: bold;
-}
-
-#tts_output {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: var(--SmartThemeBlurTintColor);
-    border-radius: 4px;
-}
-
-.button-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-/* inline-drawer 在插件内的样式 */
-.siliconflow-extension-settings .inline-drawer {
-    margin-bottom: 10px;
-    border: 1px solid var(--SmartThemeBorderColor, #e0e0e0);
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.siliconflow-extension-settings .inline-drawer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: var(--SmartThemeBlurTintColor);
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.siliconflow-extension-settings .inline-drawer-header:hover {
-    background-color: var(--SmartThemeHoverColor, #e9ecef);
-}
-
-.siliconflow-extension-settings .inline-drawer-content {
-    display: none;
-    padding: 15px;
-    /* 不设置背景色，继承主题 */
-    border-top: 1px solid var(--SmartThemeBorderColor, #444);
-}
-
-.siliconflow-extension-settings .inline-drawer-icon {
-    transition: transform 0.3s;
-}
-
-.siliconflow-extension-settings .inline-drawer-icon.down {
-    transform: rotate(180deg);
-}
-
-/* 子分区样式 */
-.siliconflow-extension-settings .sub-section {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--SmartThemeBorderColor, #e0e0e0);
-}
-
-.siliconflow-extension-settings .sub-section h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: var(--SmartThemeBodyColor, #495057);
-    font-size: 1.1em;
-}
-
-.siliconflow-extension-settings .sf-extra-text-rules {
-    margin-top: 14px;
-}
-
-.siliconflow-extension-settings .sf-tag-rule-block {
-    margin-top: 10px;
-}
-
-.siliconflow-extension-settings .sf-text-rule-help {
-    margin: 8px 0;
-    padding: 8px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.18);
-    color: var(--SmartThemeBodyColor, #ddd);
-    font-size: 0.92em;
-    line-height: 1.55;
-}
-
-.siliconflow-extension-settings .sf-text-rule-help code {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 4px;
-    padding: 1px 5px;
-}
-
-.siliconflow-extension-settings .sf-tag-rule-head {
-    margin-bottom: 6px;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.siliconflow-extension-settings .sf-inline-mini-check {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 5px !important;
-    margin: 0 0 0 4px !important;
-    width: auto !important;
-    white-space: nowrap;
-}
-
-.siliconflow-extension-settings .sf-inline-mini-check input[type="checkbox"] {
-    flex: 0 0 auto !important;
-    margin: 0 !important;
-}
-
-.siliconflow-extension-settings .sf-tag-pair-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.siliconflow-extension-settings .tts-tag-pair-row {
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 2px;
-    flex-wrap: wrap;
-}
-
-.siliconflow-extension-settings .tts-tag-pair-row label {
-    flex: 1 1 130px;
-    min-width: 120px;
-    margin-bottom: 0;
-}
-
-.siliconflow-extension-settings .tts-tag-pair-row input {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.siliconflow-extension-settings .tts-tag-enabled-label {
-    display: inline-flex !important;
-    align-items: center;
-    gap: 4px;
-    flex: 0 0 auto;
-    min-width: auto !important;
-    margin: 0 !important;
-    white-space: nowrap;
-}
-
-.siliconflow-extension-settings .tts-tag-enabled-label .tts-tag-enabled {
-    width: auto;
-    margin: 0 !important;
-}
-
-.siliconflow-extension-settings .tts-tag-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.35em;
-    height: 1.35em;
-    border-radius: 4px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.siliconflow-extension-settings .tts-tag-skip {
-    color: #ff6b6b;
-    border: 1px solid rgba(255, 107, 107, 0.55);
-    background: rgba(255, 107, 107, 0.12);
-}
-
-.siliconflow-extension-settings .tts-tag-read {
-    color: #00d084;
-    border: 1px solid rgba(0, 208, 132, 0.55);
-    background: rgba(0, 208, 132, 0.12);
-}
-
-.siliconflow-extension-settings .tts-tag-preview {
-    min-width: 88px;
-    color: var(--SmartThemeQuoteColor, #b6d7ff);
-    font-size: 0.86em;
-    opacity: 0.82;
-    white-space: nowrap;
-}
-
-.siliconflow-extension-settings .sf-checkbox-row {
-    justify-content: flex-start;
-    align-items: center;
-    gap: 6px;
-    margin: 4px 0 6px;
-}
-
-.siliconflow-extension-settings .sf-checkbox-row input {
-    width: auto;
-    margin: 0 !important;
-}
-
-.siliconflow-extension-settings .sf-setting-row input,
-.siliconflow-extension-settings .setting-item input[type="text"],
-.siliconflow-extension-settings .setting-item input[type="password"],
-.siliconflow-extension-settings .setting-item input[type="number"],
-.siliconflow-extension-settings .setting-item select,
-.siliconflow-extension-settings .setting-item textarea {
-    background: rgba(18, 18, 18, 0.58) !important;
-    border: 1px solid rgba(255, 255, 255, 0.72) !important;
+    width: 100% !important;
+    height: 30px !important;
+    padding: 4px 8px !important;
+    margin: 2px 0 4px 0 !important;
+    font-size: 0.88em !important;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.16)) !important;
+    border-radius: 4px !important;
+    background: rgba(15, 15, 18, 0.5) !important;
     color: var(--SmartThemeBodyColor, #fff) !important;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+    transition: border-color 0.15s ease !important;
 }
 
-.siliconflow-extension-settings input[type="checkbox"] {
-    width: 14px !important;
-    height: 14px !important;
-    margin: 0 4px 0 0 !important;
+.siliconflow-extension-settings input:focus,
+.siliconflow-extension-settings select:focus,
+.siliconflow-extension-settings textarea:focus {
+    border-color: var(--SmartThemeEmColor, #ffb86c) !important;
+    outline: none !important;
 }
 
-.siliconflow-extension-settings .sf-checkbox-inline-row {
-    display: flex !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
-    gap: 12px 20px !important;
+.siliconflow-extension-settings textarea {
+    height: 52px !important;
+    resize: vertical !important;
 }
 
-.siliconflow-extension-settings label.sf-checkbox-item {
+/* 按钮微型化与质感 */
+.siliconflow-extension-settings .menu_button {
+    height: 28px !important;
+    line-height: 26px !important;
+    padding: 0 10px !important;
+    margin: 2px !important;
+    font-size: 0.84em !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.15)) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--SmartThemeBodyColor, #eee) !important;
+    cursor: pointer !important;
     display: inline-flex !important;
-    flex-direction: row !important;
     align-items: center !important;
-    gap: 6px !important;
-    width: auto !important;
-    margin: 0 !important;
+    justify-content: center !important;
     white-space: nowrap !important;
+    transition: all 0.15s ease !important;
 }
 
-.siliconflow-extension-settings label.sf-checkbox-item input[type="checkbox"] {
-    flex: 0 0 auto !important;
-    margin: 0 !important;
+.siliconflow-extension-settings .menu_button:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
 }
 
-.siliconflow-extension-settings label.sf-checkbox-item span {
-    display: inline !important;
-    line-height: 1.2 !important;
+.siliconflow-extension-settings .menu_button:active {
+    transform: scale(0.98);
 }
 
+/* 按钮组 */
+.siliconflow-extension-settings .button-group {
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center !important;
+    margin-top: 3px !important;
+}
+
+/* 紧凑滑动条 */
+.siliconflow-extension-settings input[type="range"] {
+    width: 100% !important;
+    height: 5px !important;
+    margin: 4px 0 !important;
+    accent-color: var(--SmartThemeEmColor, #ffb86c) !important;
+}
+
+/* 辅助说明小字 */
+.siliconflow-extension-settings small {
+    font-size: 0.8em !important;
+    line-height: 1.35 !important;
+    opacity: 0.68 !important;
+    margin-top: 2px !important;
+    margin-bottom: 4px !important;
+}
+
+.siliconflow-extension-settings .sf-help-line {
+    font-size: 0.8em !important;
+    opacity: 0.72 !important;
+    margin-bottom: 6px !important;
+}
+
+/* 方案 A 核心：API 凭据与使用指南微型折叠 */
+.siliconflow-extension-settings details {
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.08)) !important;
+    border-radius: 5px !important;
+    padding: 4px 8px !important;
+    margin: 5px 0 !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+}
+
+.siliconflow-extension-settings details summary {
+    font-size: 0.85em !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    opacity: 0.85 !important;
+    padding: 2px 0 !important;
+    user-select: none !important;
+    outline: none !important;
+}
+
+.siliconflow-extension-settings details summary:hover {
+    color: var(--SmartThemeEmColor, #ffb86c) !important;
+}
+
+.siliconflow-extension-settings details[open] {
+    padding-bottom: 8px !important;
+    background: rgba(0, 0, 0, 0.28) !important;
+}
+
+/* 多人角色音色绑定 (高频区专属优化) */
 .siliconflow-extension-settings .sf-role-voices-collapse {
-    margin: 8px 0 10px;
+    border-color: rgba(255, 184, 108, 0.25) !important;
 }
 
 .siliconflow-extension-settings .sf-role-voice-tools {
-    align-items: center;
-    gap: 8px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 6px !important;
 }
 
-.siliconflow-extension-settings .sf-role-voice-tools small {
-    flex: 1 1 220px;
+.siliconflow-extension-settings .sf-role-voice-add {
+    display: flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+    margin-bottom: 6px !important;
+}
+
+.siliconflow-extension-settings .sf-role-voice-add input {
+    flex: 1 1 110px !important;
+    min-width: 90px !important;
+}
+
+.siliconflow-extension-settings .sf-role-voice-add select {
+    flex: 2 1 140px !important;
+    min-width: 120px !important;
+}
+
+.siliconflow-extension-settings .sf-role-voice-add button {
+    flex: 0 0 auto !important;
+    background: var(--SmartThemeEmColor, #ffb86c) !important;
+    color: #111 !important;
+    font-weight: 700 !important;
+    border: none !important;
 }
 
 .siliconflow-extension-settings .sf-role-voice-row {
-    display: grid !important;
-    grid-template-columns: minmax(90px, 0.55fr) minmax(150px, 1fr);
-    gap: 8px;
-    align-items: center;
-    margin: 4px 0;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 3px 6px !important;
+    margin: 2px 0 !important;
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 .siliconflow-extension-settings .sf-role-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 700;
+    flex: 0 0 85px !important;
+    font-weight: 600 !important;
+    font-size: 0.85em !important;
+    color: var(--SmartThemeEmColor, #ffb86c) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
 }
 
-.siliconflow-extension-settings .tts-role-voice-select {
-    width: 100%;
-}
-
-.siliconflow-extension-settings .sf-file-import-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.siliconflow-extension-settings .sf-file-import-row input[type="file"] {
-    position: absolute;
-    width: 1px !important;
-    height: 1px !important;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.siliconflow-extension-settings .sf-file-import-button {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    min-height: 30px;
+.siliconflow-extension-settings .tts-role-voice-select,
+.siliconflow-extension-settings .sf-tier-voice-select {
+    flex: 1 1 auto !important;
+    height: 26px !important;
+    font-size: 0.82em !important;
     margin: 0 !important;
-    cursor: pointer;
 }
 
-.siliconflow-extension-settings .sf-file-name {
-    color: var(--SmartThemeEmColor, rgba(255, 255, 255, 0.72));
-    font-size: 0.9em;
-    min-width: 100px;
+.siliconflow-extension-settings .sf-role-del {
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    line-height: 22px !important;
+    padding: 0 !important;
+    font-size: 0.78em !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    background: rgba(255, 107, 107, 0.08) !important;
 }
 
-/* ===== 缓存面板：统计小字 + 折叠 + 紧凑行 ===== */
-.siliconflow-extension-settings .sf-cache-toggle {
-    cursor: pointer;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.siliconflow-extension-settings .sf-cache-toggle:hover strong {
-    text-decoration: underline;
-}
-.siliconflow-extension-settings .sf-cache-arrow {
-    font-size: 11px;
-    opacity: 0.7;
-    width: 12px;
-    flex: 0 0 auto;
-}
-.siliconflow-extension-settings .sf-cache-stats {
-    font-size: 11px;
-    font-weight: normal;
-    opacity: 0.9;
-}
-.siliconflow-extension-settings .sf-cache-stats-siliconflow { color: #6fb7ff; }
-.siliconflow-extension-settings .sf-cache-stats-volcano { color: #ff9d6f; }
-.siliconflow-extension-settings .sf-cache-stats-minimax { color: #c79bff; }
-.siliconflow-extension-settings .sf-cache-stats-moss { color: #7bd88f; }
-.siliconflow-extension-settings .sf-cache-toggle .sf-cache-clear {
-    margin-left: auto;
-    font-size: 11px;
-    padding: 2px 8px;
-}
-.siliconflow-extension-settings .sf-cache-list {
-    font-size: 12px;
-    line-height: 1.4;
-}
-.siliconflow-extension-settings .sf-cache-list .sf-cache-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 4px;
-    margin: 2px 0;
-    font-size: 12px;
-}
-.siliconflow-extension-settings .sf-cache-list .sf-cache-text {
-    font-size: 12px;
-}
-.siliconflow-extension-settings .sf-cache-list small {
-    font-size: 11px;
-    opacity: 0.75;
-}
-.siliconflow-extension-settings .sf-cache-list .sf-cache-actions .menu_button {
-    font-size: 11px;
-    padding: 2px 6px;
-    min-width: 0;
+.siliconflow-extension-settings .sf-role-del:hover {
+    background: rgba(255, 107, 107, 0.25) !important;
+    color: #fff !important;
 }
 
-/* ===== 我的复刻音色（火山） ===== */
+/* 复刻音色列表紧凑化 */
 .siliconflow-extension-settings .sf-clone-add-row {
-    display: flex;
-    gap: 6px;
-    margin: 6px 0;
+    display: flex !important;
+    gap: 4px !important;
+    margin: 4px 0 !important;
 }
+
 .siliconflow-extension-settings .sf-clone-add-row input {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 12px;
+    height: 26px !important;
+    font-size: 0.82em !important;
 }
-.siliconflow-extension-settings .sf-clone-add-row .menu_button {
-    flex: 0 0 auto;
-    font-size: 12px;
+
+.siliconflow-extension-settings .sf-clone-add-row button {
+    height: 26px !important;
+    line-height: 24px !important;
+    padding: 0 8px !important;
 }
+
 .siliconflow-extension-settings .sf-clone-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 2px;
-    font-size: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.siliconflow-extension-settings .sf-clone-name {
-    font-weight: bold;
-}
-.siliconflow-extension-settings .sf-clone-id {
-    opacity: 0.65;
-    font-size: 11px;
-    word-break: break-all;
-}
-.siliconflow-extension-settings .sf-clone-status {
-    font-size: 11px;
-    margin-left: auto;
-    white-space: nowrap;
-}
-.siliconflow-extension-settings .sf-clone-row .menu_button {
-    font-size: 11px;
-    padding: 2px 6px;
-    min-width: 0;
-    flex: 0 0 auto;
+    padding: 3px 4px !important;
+    font-size: 0.82em !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
-/* ===== 使用说明折叠块 ===== */
-.siliconflow-extension-settings .sf-guide {
-    margin-top: 8px;
-    font-size: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 6px;
-    padding: 6px 10px;
-}
-.siliconflow-extension-settings .sf-guide summary {
-    cursor: pointer;
-    font-weight: bold;
-    user-select: none;
-}
-.siliconflow-extension-settings .sf-guide ol {
-    margin: 8px 0 4px;
-    padding-left: 18px;
-    line-height: 1.7;
-}
-.siliconflow-extension-settings .sf-guide img {
-    display: block;
-    max-width: 100%;
-    margin: 6px 0;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-.siliconflow-extension-settings .sf-guide code {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-size: 11px;
-}
-.siliconflow-extension-settings .sf-guide-credit {
-    display: block;
-    text-align: right;
-    opacity: 0.6;
-    font-size: 11px;
-}
-
-@media (max-width: 520px) {
-    .siliconflow-extension-settings .sf-voice-slider-grid {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) !important;
-        gap: 8px !important;
-        width: 100%;
-        box-sizing: border-box;
+/* 移动端全面自适应 */
+@media (max-width: 580px) {
+    .siliconflow-extension-settings .sf-layout {
+        flex-direction: column !important;
+        gap: 6px !important;
     }
-
-    .siliconflow-extension-settings .sf-voice-slider-grid .setting-item {
-        min-width: 0;
-        width: 100%;
-        margin-bottom: 8px;
-    }
-
-    .siliconflow-extension-settings .sf-voice-slider-grid input[type="range"] {
+    .siliconflow-extension-settings .sf-side-nav {
+        flex-direction: row !important;
         width: 100% !important;
-        margin-right: 0;
-        box-sizing: border-box;
+        overflow-x: auto !important;
+    }
+    .siliconflow-extension-settings .sf-nav-item {
+        flex: 1 1 auto !important;
+        padding: 5px 2px !important;
+    }
+    .siliconflow-extension-settings .sf-role-voice-add {
+        flex-wrap: wrap !important;
+    }
+    .siliconflow-extension-settings .sf-role-voice-add input {
+        flex: 1 1 100% !important;
+    }
+    .siliconflow-extension-settings .sf-role-voice-add select {
+        flex: 1 1 calc(100% - 75px) !important;
+    }
+    .siliconflow-extension-settings .sf-role-voice-add button {
+        flex: 0 0 70px !important;
     }
 }
